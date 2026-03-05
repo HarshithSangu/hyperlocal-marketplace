@@ -7,6 +7,8 @@ const UserSchema = new mongoose.Schema({
   password: { type: String, required: true, minlength: 6 },
   role: { type: String, enum: ["user", "seller", "admin"], default: "user" },
   createdAt: { type: Date, default: Date.now },
+  isOnline: { type: Boolean, default: false },
+  lastSeen: { type: Date, default: null },
 });
 
 // password hashing
