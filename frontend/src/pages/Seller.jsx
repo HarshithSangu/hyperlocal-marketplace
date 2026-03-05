@@ -2,6 +2,7 @@ import MapPicker from "../components/MapPicker";
 
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { apiCall } from "../api";
 
 export function SellerDashboard() {
@@ -11,6 +12,7 @@ export function SellerDashboard() {
   const [error, setError] = useState("");
   const [tab, setTab] = useState("shop");
   const { logout } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadShop();
@@ -96,6 +98,12 @@ export function SellerDashboard() {
             }`}
           >
             Products
+          </button>
+          <button
+            onClick={() => navigate("/seller/messages")}
+            className={`px-6 py-2 rounded-full font-medium transition-all duration-200 ease-in-out bg-white text-slate-700 border border-slate-200 hover:bg-slate-50`}
+          >
+            Messages
           </button>
         </div>
 
@@ -465,7 +473,7 @@ function ProductListItem({ product, onDeleteSuccess }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editPrice, setEditPrice] = useState(product.price);
   const [editAvailability, setEditAvailability] = useState(
-    product.availabilityStatus
+    product.availabilityStatus,
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -516,7 +524,9 @@ function ProductListItem({ product, onDeleteSuccess }) {
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-slate-700">Price</label>
+              <label className="text-xs font-medium text-slate-700">
+                Price
+              </label>
               <input
                 type="number"
                 step="0.01"
@@ -584,8 +594,8 @@ function ProductListItem({ product, onDeleteSuccess }) {
                   product.availabilityStatus === "likely"
                     ? "bg-green-100 text-green-700"
                     : product.availabilityStatus === "low"
-                    ? "bg-yellow-100 text-yellow-700"
-                    : "bg-gray-100 text-gray-700"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : "bg-gray-100 text-gray-700"
                 }`}
               >
                 {product.availabilityStatus}
@@ -593,9 +603,7 @@ function ProductListItem({ product, onDeleteSuccess }) {
             </div>
             <div>
               <p className="text-xs text-slate-500 mb-1">Brand</p>
-              <p className="text-sm text-slate-700">
-                {product.brand || "N/A"}
-              </p>
+              <p className="text-sm text-slate-700">{product.brand || "N/A"}</p>
             </div>
           </div>
         </div>
