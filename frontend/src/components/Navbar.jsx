@@ -9,7 +9,9 @@ export function Navbar() {
 
   return (
     <nav style={navStyle}>
-      <div style={navBrandStyle}>Hyperlocal</div>
+      <Link to={user ? (user.role === 'seller' ? '/seller' : user.role === 'admin' ? '/admin' : '/search') : '/'} style={navBrandStyle}>
+        Hyperlocal
+      </Link>
       <div style={navLinksStyle}>
         {user?.role === 'user' && <Link to="/search" style={linkStyle}>Search</Link>}
         {user?.role === 'seller' && (
@@ -64,6 +66,9 @@ const navStyle = {
 const navBrandStyle = {
   fontSize: '1.5rem',
   fontWeight: 'bold',
+  color: 'white',
+  textDecoration: 'none',
+  cursor: 'pointer',
 };
 
 const navLinksStyle = {

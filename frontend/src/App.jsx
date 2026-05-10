@@ -13,6 +13,7 @@ import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
 import { SellerDashboard } from "./pages/Seller";
 import { Admin } from "./pages/Admin";
+import { Landing } from "./pages/Landing";
 const AdminSellerProfile = React.lazy(() =>
   import("./pages/AdminSellerProfile").then((m) => ({
     default: m.AdminSellerProfile,
@@ -49,7 +50,7 @@ function App() {
             }
           >
             <Routes>
-              <Route path="/" element={<Navigate to="/login" />} />
+              <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
 
