@@ -89,7 +89,7 @@ function ShopDetailsComponent() {
   const openDirections = () => {
     if (!shop?.latitude || !shop?.longitude) return;
 
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${shop.latitude},${shop.longitude}`;
+    const url = `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&to=${shop.latitude},${shop.longitude}`;
     window.open(url, "_blank");
   };
 

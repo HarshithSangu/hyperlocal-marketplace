@@ -8,7 +8,6 @@ exports.topSearchesNearby = async (req, res, next) => {
     const shop = await Shop.findOne({ owner: ownerId });
     if (!shop) return res.status(404).json({ message: "Shop not found" });
     const coords = shop.location.coordinates || [0, 0];
-    const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     const results = await SearchLog.aggregate([
       {
@@ -17,7 +16,6 @@ exports.topSearchesNearby = async (req, res, next) => {
           distanceField: "distance",
           spherical: true,
           maxDistance: 3000,
-          query: { createdAt: { $gte: since } },
         },
       },
       { $group: { _id: "$text", count: { $sum: 1 } } },

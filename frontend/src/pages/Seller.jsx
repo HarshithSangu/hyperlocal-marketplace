@@ -5,10 +5,15 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { apiCall } from "../api";
 
+const LOCATIONIQ_API_KEY =
+  import.meta.env.VITE_LOCATIONIQ_API_KEY || "YOUR_LOCATIONIQ_API_KEY";
+
 export function SellerDashboard() {
   const [shop, setShop] = useState(null);
   const [products, setProducts] = useState([]);
+  const [topSearches, setTopSearches] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchesLoading, setSearchesLoading] = useState(true);
   const [error, setError] = useState("");
   const [tab, setTab] = useState("shop");
   const { logout } = useAuth();
@@ -16,6 +21,7 @@ export function SellerDashboard() {
 
   useEffect(() => {
     loadShop();
+    loadTopSearches();
   }, []);
 
   const loadShop = async () => {
@@ -36,6 +42,18 @@ export function SellerDashboard() {
       setProducts(data);
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const loadTopSearches = async () => {
+    try {
+      const data = await apiCall("/analytics/seller/top-searches");
+      setTopSearches(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+      setTopSearches([]);
+    } finally {
+      setSearchesLoading(false);
     }
   };
 
@@ -78,6 +96,41 @@ export function SellerDashboard() {
 
       {/* TABS */}
       <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="bg-white rounded-2xl shadow-md p-6 border border-slate-100 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-semibold text-slate-900">
+                Most searched nearby items
+              </h2>
+              <p className="text-sm text-slate-600 mt-1">
+                What customers are searching for around your shop.
+              </p>
+            </div>
+          </div>
+
+          {searchesLoading ? (
+            <p className="text-sm text-slate-500">Loading nearby search trends...</p>
+          ) : topSearches.length > 0 ? (
+            <div className="space-y-3">
+              {topSearches.map((item, index) => (
+                <div
+                  key={`${item.text}-${index}`}
+                  className="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3"
+                >
+                  <span className="font-medium text-slate-800">{item.text}</span>
+                  <span className="text-sm text-indigo-600 font-semibold">
+                    {item.count} searches
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-500">
+              No nearby search activity yet.
+            </p>
+          )}
+        </div>
+
         <div className="flex gap-2 mb-8">
           <button
             onClick={() => setTab("shop")}
@@ -127,6 +180,33 @@ function ShopTab({ shop, onShopCreated }) {
   const [longitude, setLongitude] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [addressLoading, setAddressLoading] = useState(false);
+
+  useEffect(() => {
+    const query = address.trim();
+    if (query.length < 3) {
+      setAddressSuggestions([]);
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      try {
+        setAddressLoading(true);
+        const res = await fetch(
+          `https://us1.locationiq.com/v1/search?key=${LOCATIONIQ_API_KEY}&q=${encodeURIComponent(query)}&format=json&limit=5&addressdetails=1`,
+        );
+        const data = await res.json();
+        setAddressSuggestions(Array.isArray(data) ? data : []);
+      } catch {
+        setAddressSuggestions([]);
+      } finally {
+        setAddressLoading(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(timeout);
+  }, [address]);
 
   const handleApply = async (e) => {
     e.preventDefault();
@@ -262,6 +342,28 @@ function ShopTab({ shop, onShopCreated }) {
             disabled={loading}
             className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all disabled:opacity-50"
           />
+          {addressLoading && (
+            <p className="text-sm text-slate-500 mt-2">Searching locations...</p>
+          )}
+          {addressSuggestions.length > 0 && (
+            <div className="mt-2 border border-slate-200 rounded-lg bg-white shadow-sm max-h-40 overflow-y-auto">
+              {addressSuggestions.map((suggestion, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => {
+                    setAddress(suggestion.display_name);
+                    setLatitude(Number(suggestion.lat));
+                    setLongitude(Number(suggestion.lon));
+                    setAddressSuggestions([]);
+                  }}
+                  className="block w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                >
+                  {suggestion.display_name}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* 🗺 MAP PICKER */}
@@ -271,9 +373,10 @@ function ShopTab({ shop, onShopCreated }) {
           </label>
           <div className="bg-slate-50 rounded-2xl overflow-hidden border-2 border-dashed border-slate-300">
             <MapPicker
-              onSelect={(lat, lng) => {
+              onSelect={(lat, lng, selectedAddress) => {
                 setLatitude(lat);
                 setLongitude(lng);
+                if (selectedAddress) setAddress(selectedAddress);
               }}
             />
           </div>

@@ -1,11 +1,6 @@
-import React from "react";
-import {
-  GoogleMap,
-  Marker,
-  DirectionsRenderer,
-  useLoadScript,
-} from "@react-google-maps/api";
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import React, { useMemo } from "react";
+import { MapContainer, Marker, Polyline, TileLayer } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 
 const containerStyle = {
   width: "100%",
@@ -14,59 +9,32 @@ const containerStyle = {
 };
 
 function MapView({ shops, userLocation, selectedShop }) {
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-  });
-
-  const [directions, setDirections] = useState(null);
-  const mapRef = useRef(null);
-  const directionsServiceRef = useRef(null);
-
   const center = useMemo(() => {
-    if (userLocation) return userLocation;
-    return { lat: 17.385044, lng: 78.486671 };
+    if (userLocation) return [userLocation.lat, userLocation.lng];
+    return [17.385044, 78.486671];
   }, [userLocation]);
 
-  const handleMapLoad = useCallback((map) => {
-    if (!mapRef.current) {
-      mapRef.current = map;
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!selectedShop || !userLocation || !window.google) return;
-
-    if (!directionsServiceRef.current) {
-      directionsServiceRef.current =
-        new window.google.maps.DirectionsService();
-    }
-
-    const directionsService = directionsServiceRef.current;
-
-    directionsService.route(
-      {
-        origin: userLocation,
-        destination: selectedShop,
-        travelMode: window.google.maps.TravelMode.DRIVING,
-      },
-      (result, status) => {
-        if (status === "OK") {
-          setDirections(result);
-        }
-      },
-    );
+  const route = useMemo(() => {
+    if (!selectedShop || !userLocation) return [];
+    return [
+      [userLocation.lat, userLocation.lng],
+      [selectedShop.lat, selectedShop.lng],
+    ];
   }, [selectedShop, userLocation]);
 
-  if (!isLoaded) return <p>Loading map...</p>;
-
   return (
-    <GoogleMap
-      mapContainerStyle={containerStyle}
+    <MapContainer
       center={center}
       zoom={14}
-      onLoad={handleMapLoad}
+      style={containerStyle}
+      scrollWheelZoom
     >
-      {userLocation && <Marker position={userLocation} label="You" />}
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+
+      {userLocation && <Marker position={[userLocation.lat, userLocation.lng]} />}
 
       {shops.map((shop, i) => (
         <Marker
@@ -78,8 +46,13 @@ function MapView({ shops, userLocation, selectedShop }) {
         />
       ))}
 
-      {directions && <DirectionsRenderer directions={directions} />}
-    </GoogleMap>
+      {route.length > 0 && (
+        <Polyline
+          positions={route}
+          pathOptions={{ color: "#4f46e5", weight: 4 }}
+        />
+      )}
+    </MapContainer>
   );
 }
 

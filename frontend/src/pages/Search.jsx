@@ -75,7 +75,7 @@ function SearchComponent() {
         navigator.geolocation.getCurrentPosition(resolve, reject),
       );
 
-      const url = `https://www.google.com/maps/dir/?api=1&origin=${pos.coords.latitude},${pos.coords.longitude}&destination=${shopLat},${shopLng}`;
+      const url = `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&from=${pos.coords.latitude},${pos.coords.longitude}&to=${shopLat},${shopLng}`;
       window.open(url, "_blank");
     } catch {
       alert("Location permission required for directions");
