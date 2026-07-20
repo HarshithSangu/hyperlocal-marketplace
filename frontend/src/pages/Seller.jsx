@@ -109,16 +109,20 @@ export function SellerDashboard() {
           </div>
 
           {searchesLoading ? (
-            <p className="text-sm text-slate-500">Loading nearby search trends...</p>
+            <p className="text-sm text-slate-500">
+              Loading nearby search trends...
+            </p>
           ) : topSearches.length > 0 ? (
-            <div className="space-y-3">
-              {topSearches.map((item, index) => (
+            <div className="space-y-2">
+              {topSearches.slice(0, 5).map((item, index) => (
                 <div
                   key={`${item.text}-${index}`}
-                  className="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3"
+                  className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2"
                 >
-                  <span className="font-medium text-slate-800">{item.text}</span>
-                  <span className="text-sm text-indigo-600 font-semibold">
+                  <span className="font-medium text-slate-800 text-sm">
+                    {item.text}
+                  </span>
+                  <span className="text-xs text-indigo-600 font-semibold">
                     {item.count} searches
                   </span>
                 </div>
@@ -343,7 +347,9 @@ function ShopTab({ shop, onShopCreated }) {
             className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all disabled:opacity-50"
           />
           {addressLoading && (
-            <p className="text-sm text-slate-500 mt-2">Searching locations...</p>
+            <p className="text-sm text-slate-500 mt-2">
+              Searching locations...
+            </p>
           )}
           {addressSuggestions.length > 0 && (
             <div className="mt-2 border border-slate-200 rounded-lg bg-white shadow-sm max-h-40 overflow-y-auto">

@@ -20,7 +20,7 @@ exports.topSearchesNearby = async (req, res, next) => {
       },
       { $group: { _id: "$text", count: { $sum: 1 } } },
       { $sort: { count: -1 } },
-      { $limit: 20 },
+      { $limit: 5 },
     ]);
 
     res.json(results.map((r) => ({ text: r._id, count: r.count })));
